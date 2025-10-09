@@ -1,0 +1,42 @@
+name: Process GitHub Notifications
+
+on:
+  schedule:
+    # Run every 6 hours
+    - cron: '0 */6 * * *'
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  process-notifications:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build project
+      run: npm run build
+      
+    - name: Process notifications
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_USER: ${{ secrets.GITHUB_USER }}
+        NODE_ENV: production
+        LOG_LEVEL: info
+      run: npm start
+      
+    - name: Create summary
+      if: always()
+      run: |
+        echo "## Notification Processing Summary" >> $GITHUB_STEP_SUMMARY
+        echo "✅ Notification processing completed" >> $GITHUB_STEP_SUMMARY
+        echo "📅 Run time: $(date)" >> $GITHUB_STEP_SUMMARY
