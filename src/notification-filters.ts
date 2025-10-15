@@ -238,8 +238,7 @@ export class DependabotPRFilter implements NotificationFilter {
 
     if (!isDependabotPR) {
       this.logger.debug(
-        `PR ${prDetails.number} is not from Dependabot, not marking as done`,
-        { user: prDetails.user }
+        `PR ${prDetails.number} is not from Dependabot, not marking as done`
       );
       return false;
     }
