@@ -43,7 +43,8 @@ export class MergedClosedPRFilter implements NotificationFilter {
       prDetails.state === "closed" || prDetails.merged === true;
     if (!isMergedOrClosed) {
       this.logger.debug(
-        `PR ${prDetails.number} is still open, not marking as done`
+        `PR ${prDetails.number} is still open, not marking as done`,
+        { prDetails }
       );
       return false;
     }
