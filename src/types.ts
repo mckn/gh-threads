@@ -27,11 +27,12 @@ export interface GitHubNotification {
 export interface PullRequestDetails {
   id: number;
   number: number;
-  state: 'open' | 'closed';
+  state: "open" | "closed";
   merged: boolean;
   merged_at: string | null;
   closed_at: string | null;
   user: {
+    type: "User" | "Bot";
     login: string;
     id: number;
   };
@@ -60,7 +61,10 @@ export interface GitHubTeam {
 }
 
 export interface NotificationFilter {
-  shouldMarkAsDone(notification: GitHubNotification, prDetails?: PullRequestDetails): boolean;
+  shouldMarkAsDone(
+    notification: GitHubNotification,
+    prDetails?: PullRequestDetails
+  ): boolean;
 }
 
 export interface Logger {
