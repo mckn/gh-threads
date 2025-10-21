@@ -38,14 +38,14 @@ export class MergedClosedPRFilter implements NotificationFilter {
       return false;
     }
 
-    // Check if PR is merged or closed
-    const isMergedOrClosed =
-      prDetails.state === "closed" || prDetails.merged === true;
-    if (!isMergedOrClosed) {
-      this.logger.debug(
-        `PR ${prDetails.number} is still open, not marking as done`
-      );
-      return false;
+    if (prDetails.state === "closed") {
+      this.logger.debug(`PR ${prDetails.number} is closed, marking as done`);
+      return true;
+    }
+
+    if (prDetails.merged === true) {
+      this.logger.debug(`PR ${prDetails.number} is merged, marking as done`);
+      return true;
     }
 
     // Check if user is a direct reviewer (not just part of a team)
@@ -78,9 +78,7 @@ export class MergedClosedPRFilter implements NotificationFilter {
     }
 
     this.logger.info(
-      `PR ${prDetails.number} is ${
-        prDetails.merged ? "merged" : "closed"
-      } and user is not directly involved, marking as done`
+      `PR ${prDetails.number}, user is not directly involved, marking as done`
     );
     return true;
   }
