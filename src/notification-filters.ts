@@ -290,6 +290,92 @@ export class DependabotPRFilter implements NotificationFilter {
   }
 }
 
+export class PluginsPlatformBotPRFilter implements NotificationFilter {
+  private logger: Logger;
+  private currentUser: string;
+
+  constructor(currentUser: string, logger: Logger) {
+    this.currentUser = currentUser;
+    this.logger = logger;
+  }
+
+  shouldMarkAsDone(
+    notification: GitHubNotification,
+    prDetails?: PullRequestDetails
+  ): boolean {
+    // Only process PullRequest notifications
+    if (notification.subject.type !== "PullRequest") {
+      return false;
+    }
+
+    // If we don't have PR details, we can't make a decision
+    if (!prDetails) {
+      this.logger.debug(
+        `No PR details available for notification ${notification.id}`
+      );
+      return false;
+    }
+
+    // Check if PR is opened by Dependabot app
+    const isDependabotPR =
+      prDetails.user.login === "grafana-plugins-platform-bot[bot]" &&
+      prDetails.user.type === "Bot";
+
+    if (!isDependabotPR) {
+      this.logger.debug(
+        `PR ${prDetails.number} is not from Plugins Platform Bot, not marking as done`
+      );
+      return false;
+    }
+
+    // Check if user is a direct reviewer (not just part of a team)
+    const isDirectReviewer = this.isDirectReviewer(prDetails);
+    if (isDirectReviewer) {
+      this.logger.debug(
+        `User ${this.currentUser} is a direct reviewer for Plugins Platform Bot PR ${prDetails.number}, not marking as done`
+      );
+      return false;
+    }
+
+    // Check if user is the author of the PR (shouldn't happen with Dependabot, but just in case)
+    const isAuthor = prDetails.user.login === this.currentUser;
+    if (isAuthor) {
+      this.logger.debug(
+        `User ${this.currentUser} is the author of Plugins Platform Bot PR ${prDetails.number}, not marking as done`
+      );
+      return false;
+    }
+
+    // Check if user is assigned to the PR
+    const isAssigned = prDetails.assignees.some(
+      (assignee) => assignee.login === this.currentUser
+    );
+    if (isAssigned) {
+      this.logger.debug(
+        `User ${this.currentUser} is assigned to Plugins Platform Bot PR ${prDetails.number}, not marking as done`
+      );
+      return false;
+    }
+
+    this.logger.info(
+      `Plugins Platform Bot PR ${prDetails.number} opened by ${prDetails.user.login} and user is not directly involved, marking as done`
+    );
+    return true;
+  }
+
+  private isDirectReviewer(prDetails: PullRequestDetails): boolean {
+    // Check if user is in the requested reviewers list
+    const isRequestedReviewer = prDetails.requested_reviewers.some(
+      (reviewer) => reviewer.login === this.currentUser
+    );
+
+    if (isRequestedReviewer) {
+      return true;
+    }
+
+    return false;
+  }
+}
 export class CompositeFilter implements NotificationFilter {
   private filters: NotificationFilter[];
   private logger: Logger;
