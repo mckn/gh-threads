@@ -376,6 +376,36 @@ export class PluginsPlatformBotPRFilter implements NotificationFilter {
     return false;
   }
 }
+export class SecurityMirrorDepsFilter implements NotificationFilter {
+  private logger: Logger;
+
+  constructor(logger: Logger) {
+    this.logger = logger;
+  }
+
+  shouldMarkAsDone(
+    notification: GitHubNotification,
+    _prDetails?: PullRequestDetails
+  ): boolean {
+    // The security mirror is kept in sync through other means, so dependency
+    // update notifications there never require action.
+    if (
+      notification.repository.full_name !== "grafana/grafana-security-mirror"
+    ) {
+      return false;
+    }
+
+    if (!notification.subject.title.startsWith("deps(")) {
+      return false;
+    }
+
+    this.logger.info(
+      `Dependency notification "${notification.subject.title}" in security mirror, marking as done`
+    );
+    return true;
+  }
+}
+
 export class CompositeFilter implements NotificationFilter {
   private filters: NotificationFilter[];
   private logger: Logger;

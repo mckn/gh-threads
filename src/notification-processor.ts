@@ -5,6 +5,7 @@ import {
   CompositeFilter,
   DependabotPRFilter,
   PluginsPlatformBotPRFilter,
+  SecurityMirrorDepsFilter,
 } from "./notification-filters";
 import { GitHubNotification, GitHubTeam, Logger } from "./types";
 import { TeamCacheManager } from "./cache";
@@ -41,8 +42,15 @@ export class NotificationProcessor {
     const ppbotFilter = new PluginsPlatformBotPRFilter(currentUser, logger);
     const renovateFilter = new RenovatePRFilter(currentUser, logger);
     const dependabotFilter = new DependabotPRFilter(currentUser, logger);
+    const securityMirrorDepsFilter = new SecurityMirrorDepsFilter(logger);
     this.filter = new CompositeFilter(
-      [prFilter, renovateFilter, dependabotFilter, ppbotFilter],
+      [
+        prFilter,
+        renovateFilter,
+        dependabotFilter,
+        ppbotFilter,
+        securityMirrorDepsFilter,
+      ],
       logger
     );
   }
