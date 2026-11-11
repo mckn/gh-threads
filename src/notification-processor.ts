@@ -5,6 +5,7 @@ import {
   CompositeFilter,
   DependabotPRFilter,
   PluginsPlatformBotPRFilter,
+  ReleasePleasePRFilter,
   SecurityMirrorDepsFilter,
 } from "./notification-filters";
 import { GitHubNotification, GitHubTeam, Logger } from "./types";
@@ -42,6 +43,7 @@ export class NotificationProcessor {
     const ppbotFilter = new PluginsPlatformBotPRFilter(currentUser, logger);
     const renovateFilter = new RenovatePRFilter(currentUser, logger);
     const dependabotFilter = new DependabotPRFilter(currentUser, logger);
+    const releasePleaseFilter = new ReleasePleasePRFilter(currentUser, logger);
     const securityMirrorDepsFilter = new SecurityMirrorDepsFilter(logger);
     this.filter = new CompositeFilter(
       [
@@ -49,6 +51,7 @@ export class NotificationProcessor {
         renovateFilter,
         dependabotFilter,
         ppbotFilter,
+        releasePleaseFilter,
         securityMirrorDepsFilter,
       ],
       logger
