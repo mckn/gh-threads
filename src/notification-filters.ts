@@ -376,6 +376,61 @@ export class PluginsPlatformBotPRFilter implements NotificationFilter {
     return false;
   }
 }
+export class ReleasePleasePRFilter implements NotificationFilter {
+  private logger: Logger;
+  private currentUser: string;
+
+  constructor(currentUser: string, logger: Logger) {
+    this.currentUser = currentUser;
+    this.logger = logger;
+  }
+
+  shouldMarkAsDone(
+    notification: GitHubNotification,
+    prDetails?: PullRequestDetails
+  ): boolean {
+    // Only process PullRequest notifications
+    if (notification.subject.type !== "PullRequest") {
+      return false;
+    }
+
+    // If we don't have PR details, we can't make a decision
+    if (!prDetails) {
+      this.logger.debug(
+        `No PR details available for notification ${notification.id}`
+      );
+      return false;
+    }
+
+    // Release-please always opens its release PRs from a branch with this
+    // prefix, regardless of which bot or app runs it.
+    const isReleasePleasePR =
+      prDetails.user.type === "Bot" &&
+      prDetails.head?.ref?.startsWith("release-please--") === true;
+
+    if (!isReleasePleasePR) {
+      return false;
+    }
+
+    // Release PRs request reviews from the whole team, so being a requested
+    // reviewer is not a signal that action is needed. Being assigned is.
+    const isAssigned = prDetails.assignees.some(
+      (assignee) => assignee.login === this.currentUser
+    );
+    if (isAssigned) {
+      this.logger.debug(
+        `User ${this.currentUser} is assigned to release-please PR ${prDetails.number}, not marking as done`
+      );
+      return false;
+    }
+
+    this.logger.info(
+      `Release-please PR ${prDetails.number} opened by ${prDetails.user.login}, marking as done`
+    );
+    return true;
+  }
+}
+
 export class SecurityMirrorDepsFilter implements NotificationFilter {
   private logger: Logger;
 

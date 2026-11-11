@@ -36,6 +36,9 @@ export interface PullRequestDetails {
     login: string;
     id: number;
   };
+  head: {
+    ref: string;
+  };
   requested_reviewers: Array<{
     login: string;
     id: number;

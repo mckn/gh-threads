@@ -13,6 +13,7 @@ Automatically mark GitHub threads as "done" when they don't require any action f
 ## Current Filtering Rules
 
 - **Pull Request Threads**: Marks as done if the PR is already merged or closed AND you're not a direct reviewer (individual or team-based)
+- **Release-please PRs**: Marks as done if a bot opened the PR from a `release-please--` branch AND you're not assigned to it (being a requested reviewer does not keep it)
 - **Renovate PRs**: Marks as done if the PR is opened by Renovate (renovate-sh-app or renovate[bot]) AND you're not a direct reviewer (individual or team-based)
 
 ## Setup
